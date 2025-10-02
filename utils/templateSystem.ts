@@ -83,20 +83,10 @@ export function generatePrompt(
   jobDescription: string,
   additionalInstructions?: string
 ): string {
-  const template = getTemplate(templateId)
-  
   return `
-You are an expert cover letter writer. Create a compelling cover letter using the ${template.name} template.
+You are an expert cover letter writer. Create a compelling, professional cover letter that perfectly matches the candidate's experience with the job requirements.
 
-TEMPLATE REQUIREMENTS:
-- Style: ${template.description}
-- Tone: ${template.tone}
-- Structure: ${template.structure.join(', ')}
-
-INSTRUCTIONS:
-${template.systemPrompt}
-
-RESUME CONTENT:
+RESUME/CV:
 ${resumeContent}
 
 JOB DESCRIPTION:
@@ -104,14 +94,15 @@ ${jobDescription}
 
 ${additionalInstructions ? `ADDITIONAL INSTRUCTIONS:\n${additionalInstructions}` : ''}
 
-REQUIREMENTS:
-1. Write a complete cover letter (300-400 words)
-2. Personalize it based on the job description
-3. Highlight relevant experience from the resume
-4. Use the specified tone and style
-5. Include specific examples and achievements
-6. Make it compelling and unique
-7. End with a strong call to action
+INSTRUCTIONS:
+1. Write a professional cover letter (300-400 words)
+2. Analyze the resume and identify the most relevant skills and experiences for THIS specific job
+3. Match the candidate's background directly to the job requirements
+4. Use specific examples and achievements from the resume
+5. Show genuine interest in the company and role
+6. Make it compelling and unique - avoid generic phrases
+7. Use a professional yet personable tone
+8. End with a strong call to action
 
 Generate only the cover letter content, no explanations or metadata.
 `

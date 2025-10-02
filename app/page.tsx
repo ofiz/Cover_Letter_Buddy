@@ -154,15 +154,6 @@ Include details about:
           </div>
         </div>
 
-        {/* Template Selection */}
-        <div className="bg-gray-800 bg-opacity-20 backdrop-blur-lg rounded-3xl p-8 border border-gray-600 mb-8">
-          <TemplateSelector
-            selectedTemplate={selectedTemplate}
-            onTemplateSelect={setSelectedTemplate}
-            contentType={contentType}
-          />
-        </div>
-
         {/* Generate Button */}
         <div className="text-center mb-8">
           <button

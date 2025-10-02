@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { GoogleGenerativeAI } from '@google/generative-ai'
 import { generateMessagePrompt, getMessageTemplate } from '../../../utils/messageTemplates'
 
-// Initialize Gemini
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
-
-// Rate limiting (simple in-memory store)
 const rateLimit = new Map<string, { count: number; resetTime: number }>()
 
 function checkRateLimit(ip: string): boolean {
@@ -79,12 +74,38 @@ export async function POST(request: NextRequest) {
       personalInfo
     )
 
-    // Call Gemini API
-    const model = genAI.getGenerativeModel({ model: process.env.GEMINI_MODEL || 'gemini-pro' })
-    
-    const result = await model.generateContent(prompt)
-    const response = await result.response
-    const message = response.text()
+    const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: process.env.OPENAI_MODEL || 'gpt-3.5-turbo',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are an expert at writing casual, friendly messages in modern Hebrew for Israeli tech industry recruiting communications.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        max_tokens: 400,
+        temperature: 0.8,
+      }),
+    })
+
+    if (!openaiResponse.ok) {
+      return NextResponse.json(
+        { error: 'Failed to generate message. Please try again.' },
+        { status: 500 }
+      )
+    }
+
+    const data = await openaiResponse.json()
+    const message = data.choices[0]?.message?.content
 
     if (!message) {
       return NextResponse.json(

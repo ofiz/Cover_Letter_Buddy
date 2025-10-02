@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { GoogleGenerativeAI } from '@google/generative-ai'
 import { generatePrompt, getTemplate } from '../../../utils/templateSystem'
 
-// Initialize Gemini
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
-
-// Rate limiting (simple in-memory store)
 const rateLimit = new Map<string, { count: number; resetTime: number }>()
 
 function checkRateLimit(ip: string): boolean {
@@ -62,12 +57,40 @@ export async function POST(request: NextRequest) {
 
     const prompt = generatePrompt(templateId, resumeContent, jobDescription, additionalInstructions)
 
-    // Call Gemini API
-    const model = genAI.getGenerativeModel({ model: process.env.GEMINI_MODEL || 'gemini-pro' })
-    
-    const result = await model.generateContent(prompt)
-    const response = await result.response
-    const coverLetter = response.text()
+    // Call Mistral API directly
+    const mistralResponse = await fetch('https://api.mistral.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.MISTRAL_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: process.env.MISTRAL_MODEL || 'mistral-small-latest',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are an expert cover letter writer who creates compelling, personalized cover letters.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+      }),
+    })
+
+    if (!mistralResponse.ok) {
+      const errorData = await mistralResponse.json()
+      console.error('Mistral API Error:', errorData)
+      
+      return NextResponse.json(
+        { error: 'Failed to generate cover letter. Please try again.' },
+        { status: 500 }
+      )
+    }
+
+    const data = await mistralResponse.json()
+    const coverLetter = data.choices?.[0]?.message?.content
 
     if (!coverLetter) {
       return NextResponse.json(

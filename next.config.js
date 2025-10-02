@@ -1,8 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    serverActions: true,
-  },
   webpack: (config) => {
     config.resolve.alias.canvas = false;
     return config;
@@ -11,8 +8,8 @@ const nextConfig = {
     domains: ['localhost'],
   },
   env: {
-    GEMINI_API_KEY: process.env.GEMINI_API_KEY,
-    GEMINI_MODEL: process.env.GEMINI_MODEL,
+    MISTRAL_API_KEY: process.env.MISTRAL_API_KEY,
+    MISTRAL_MODEL: process.env.MISTRAL_MODEL,
   },
 }
 
